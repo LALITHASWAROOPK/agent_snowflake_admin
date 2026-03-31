@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "admin": {
+      "command": "python",
+      "args": ["mcp/server.py"],
+      "env": {
+        "SNOWFLAKE_ACCOUNT": "<your_account>",
+        "SNOWFLAKE_USER": "${input:snowflakeUser}",
+        "SNOWFLAKE_AUTHENTICATOR": "externalbrowser",
+        "SNOWFLAKE_ROLE": "<DEVELOPER_ROLE>",
+        "SNOWFLAKE_WAREHOUSE": "<EXEC_WAREHOUSE>",
+        "SNOWFLAKE_AGENT_FQN": "<APP_DB>.<APP_SCHEMA>.<AGENT_NAME>",
+        "MCP_PORT": "3000"
+      }
+    }
+  }
+}
