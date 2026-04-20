@@ -1,0 +1,23 @@
+version: 1.0
+runtime: python3
+build:
+  commands:
+    build:
+      - pip install -r mcp/requirements.txt
+run:
+  runtime-version: 3.11
+  command: python mcp/server.py
+  network:
+    port: 8080
+    env: MCP_PORT
+  env:
+    - name: MCP_PORT
+      value: "8080"
+    - name: AUTH_MODE
+      value: cognito
+    - name: RATE_LIMIT_REQUESTS
+      value: "60"
+    - name: RATE_LIMIT_WINDOW_SECONDS
+      value: "60"
+    - name: ALLOWED_ORIGINS
+      value: https://your-frontend-domain.example
