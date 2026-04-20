@@ -3,3 +3,5 @@
 __pycache__/
 *.pyc
 .vscode/settings.json
+
+docs/BLOG_OPTIMIZATION_SUGGESTIONS.md
