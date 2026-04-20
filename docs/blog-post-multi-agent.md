@@ -1,70 +1,70 @@
-# Building a Multi-Agent Snowflake Admin Assistant with Cortex AI
+# From One Agent to Many: Adding Cost Optimization to Your Snowflake AI Assistant (Part 2)
 
 ## Introduction
 
-Managing a Snowflake account involves juggling multiple concerns: tracking costs, optimizing warehouse performance, ensuring security compliance, and monitoring operational metrics. What if you could ask natural language questions and get intelligent, actionable answers from specialized AI agents?
+In [Part 1](https://dev.to/swaroop_krishna_e2f4b83b2/ask-your-snowflake-account-anything-build-an-ai-admin-agent-with-cortex-github-copilot-1mk6), we built an **Admin Agent** that answers questions about Snowflake usage, credits, and query history. It's great for monitoring *what happened*, but what if you want to go beyond monitoring and actually **find waste** and **recommend optimizations**?
 
-In this post, I'll show you how to build a **multi-agent Snowflake administration system** using Snowflake Cortex AI, where specialized agents work together to provide comprehensive insights.
+In this post, I'll show you how to:
+1. Build a **Cost Optimizer Agent** specialized in finding inefficiencies
+2. Create an **Orchestrator Agent** that intelligently routes questions to the right specialist
+3. Make them work together as a team
 
-## The Problem: One-Size-Fits-All Doesn't Work
+By the end, you'll have a multi-agent system where you can ask:
+- *"How much could I save?"* → Routes to Cost Optimizer
+- *"Show me last month's credits"* → Routes to Admin Agent  
+- *"Give me a complete analysis"* → Routes to both agents
 
-Traditional monitoring dashboards force you to know what you're looking for. They require:
-- Understanding which metrics to check
-- Knowing where to find them
-- Manually correlating data across different domains
-- Interpreting raw numbers without context
+## Why Add a Second Agent?
 
-What we really want is to ask questions like:
-- *"How much could I save this month?"*
-- *"Are there any security anomalies?"*
-- *"Which warehouses are wasting credits?"*
+The Admin Agent from Part 1 is great at answering *"what happened?"* questions:
+- "How many credits did we use?"
+- "Show me query counts by warehouse"
+- "What's our storage trend?"
 
-And get intelligent, actionable answers.
+But it doesn't analyze patterns or recommend actions. For that, we need a **specialist** focused on optimization.
 
-## The Solution: Specialized AI Agents
+## The Solution: Add a Cost Optimizer Specialist
 
-Instead of building one monolithic agent that tries to do everything, we create a **team of specialized agents**:
+Enter the **Cost Optimizer Agent** - designed to:
+- Detect idle warehouses wasting credits
+- Recommend auto-suspend settings
+- Identify oversized warehouses
+- Find queries that need optimization
 
-### 🔧 Admin Agent
+Instead of one monolithic agent, we now have **two specialists working together**:
+
+### 🔧 Admin Agent (from Part 1)
 **Focus:** Operational metrics and monitoring
 - Warehouse usage and credits
 - Query history and performance
 - Storage metrics
 - User spend attribution
 
-### 💰 Cost Optimizer Agent
+### 💰 Cost Optimizer Agent (new!)
 **Focus:** Waste detection and cost reduction
 - Idle warehouse detection
 - Auto-suspend recommendations
 - Warehouse rightsizing
 - Query optimization opportunities
 
-### 🔐 Security & Governance Agent
-**Focus:** Access control and compliance
-- Role and privilege auditing
-- Failed login monitoring
-- Anomaly detection
-- Unauthorized access tracking
-
-### 🧠 Orchestrator Agent
+### 🧠 Orchestrator Agent (new!)
 **Focus:** Intelligent routing
 - Understands user intent
-- Routes to appropriate specialist(s)
-- Aggregates multi-agent responses
+- Routes to appropriate specialist
+- Aggregates responses from multiple agents
 
 ## The Architecture
 
-Here's how the agents work together:
+Here's how these two agents work together:
 
 ```
 User Question (natural language)
         ↓
   Orchestrator Agent
-    ↙      ↓      ↘
-Admin    Cost    Security
-Agent    Agent    Agent
-    ↘      ↓      ↙
- Aggregated Response
+    ↙           ↘
+Admin Agent   Cost Optimizer Agent
+    ↘           ↙
+  Combined Response
 ```
 
 ### Example Flow: "How much could I save?"
@@ -79,30 +79,36 @@ Agent    Agent    Agent
    - *Setting auto-suspend to 5 minutes on ANALYTICS_WH (saves $3,100)*
    - *Downsizing REPORTING_WH from Large to Medium (saves $2,100)"*
 
-### Example Flow: Multi-Domain Query
+### Example Flow: Multi-Agent Query
 
-**Question:** *"Give me a security and cost audit"*
+**Question:** *"Give me a cost and usage analysis for ANALYTICS_WH"*
 
 The Orchestrator recognizes this spans multiple domains:
-1. Routes to **Cost Optimizer** → Returns idle credits, oversized warehouses
-2. Routes to **Security Agent** → Returns excessive privileges, failed logins
+1. Routes to **Admin Agent** → Returns credit usage, query counts, uptime
+2. Routes to **Cost Optimizer** → Returns idle time, waste analysis, recommendations
 3. **Aggregates results** into comprehensive report:
 
 ```
-Cost Findings:
-  - $4,200 in idle credits (last 7 days)
-  - 3 warehouses running oversized
-  - 12 queries with critical optimization opportunities
+ANALYTICS_WH Analysis:
 
-Security Findings:
-  - 5 users with unused ACCOUNTADMIN privileges
-  - 23 failed login attempts from unknown IPs
-  - 2 users inactive for 60+ days with active roles
+Usage Metrics (Admin Agent):
+  - Total Credits (30 days): 1,856 credits
+  - Average Daily: 61.9 credits
+  - Query Count: 12,847 queries
+  - Active Days: 30 of 30
+
+Cost Optimization (Cost Optimizer Agent):
+  - Idle Time: 67%
+  - Wasted Credits: 1,243 credits ($4,351 at $3.50/credit)
+  - Current auto_suspend: Not set (or >30 min)
+  
+Recommendation: SET AUTO_SUSPEND = 300 (5 minutes)
+Estimated Monthly Savings: ~$2,900
 ```
 
 ## Building the Foundation: Semantic Views
 
-Each specialist agent is powered by **semantic views** that abstract complex SQL into natural language concepts.
+The Cost Optimizer Agent is powered by **semantic views** that abstract complex SQL into natural language concepts.
 
 ### Cost Optimizer Semantic Views
 
@@ -127,33 +133,11 @@ This allows the agent to understand questions like:
 - "Show me waste by warehouse"
 - "Calculate idle credits for last week"
 
-### Security Semantic Views
+> 📁 **Full SQL:** See [sql/06_create_cost_optimizer_views.sql](https://github.com/LALITHASWAROOPK/agent_snowflake_admin/blob/main/sql/06_create_cost_optimizer_views.sql) and [sql/07_create_cost_optimizer_semantic_views.sql](https://github.com/LALITHASWAROOPK/agent_snowflake_admin/blob/main/sql/07_create_cost_optimizer_semantic_views.sql) for complete implementation.
 
-```sql
--- Login Anomaly Detection
-CREATE SEMANTIC VIEW SV_LOGIN_ANOMALIES
-  TABLES (la AS V_LOGIN_ANOMALIES)
-  FACTS (
-    la.failed_attempts AS la.failed_attempts,
-    la.distinct_ips AS la.distinct_ips
-  )
-  DIMENSIONS (
-    la.anomaly_severity AS la.anomaly_severity,
-    la.recommendation AS la.recommendation
-  )
-  ...
-```
+## Creating the Cost Optimizer Agent
 
-This enables security questions like:
-- "Are there any suspicious login patterns?"
-- "Show me brute force attempts"
-- "Which users have anomalous behavior?"
-
-## Creating the Specialist Agents
-
-Each agent is a Snowflake Cortex Agent with carefully crafted instructions:
-
-### Cost Optimizer Agent
+The Cost Optimizer is a Snowflake Cortex Agent with carefully crafted instructions:
 
 ```sql
 CREATE AGENT COST_OPTIMIZER_AGENT
@@ -190,36 +174,11 @@ CREATE AGENT COST_OPTIMIZER_AGENT
   $$;
 ```
 
-### Security & Governance Agent
-
-```sql
-CREATE AGENT SECURITY_AGENT
-  FROM SPECIFICATION
-  $$
-  instructions:
-    response: "You are a Security & Governance assistant. 
-              Monitor role assignments, detect privilege anomalies, 
-              track failed logins, and identify unauthorized access 
-              attempts."
-
-  tools:
-    - tool_spec: { 
-        type: "cortex_analyst_text_to_sql",
-        name: "LoginAnomalyDetector",
-        description: "Detect login anomalies and potential attacks" 
-      }
-    - tool_spec: { 
-        type: "cortex_analyst_text_to_sql",
-        name: "ExcessivePrivilegeAnalyst",
-        description: "Identify excessive or unused privileges" 
-      }
-    ...
-  $$;
-```
+> 📁 **Full SQL:** See [sql/10_create_cost_optimizer_agent.sql](https://github.com/LALITHASWAROOPK/agent_snowflake_admin/blob/main/sql/10_create_cost_optimizer_agent.sql) for the complete agent definition.
 
 ## The Orchestrator: Tying It All Together
 
-The Orchestrator Agent is the brains of the operation:
+The Orchestrator Agent is the brains of the operation - it understands your question and routes it to the right specialist:
 
 ```sql
 CREATE AGENT ORCHESTRATOR_AGENT
@@ -235,22 +194,26 @@ CREATE AGENT ORCHESTRATOR_AGENT
       4. Aggregate and present the results
       
       Available specialized agents:
-      - AdminAgent: Operational metrics, query history, credits
-      - CostOptimizerAgent: Waste detection, optimization, savings
-      - SecurityAgent: Access control, privilege auditing, compliance
+      - AdminAgent: Operational metrics, query history, credits, usage
+      - CostOptimizerAgent: Waste detection, optimization, savings recommendations
       
       Routing guidelines:
-      - "credits spent", "warehouse usage" → AdminAgent
-      - "waste", "idle", "optimization" → CostOptimizerAgent
-      - "security", "roles", "privileges" → SecurityAgent
-      - Multi-domain questions → multiple agents in parallel
+      - "credits spent", "warehouse usage", "query count" → AdminAgent
+      - "waste", "idle", "optimization", "savings" → CostOptimizerAgent
+      - Questions needing both context and optimization → both agents
+      
+      Examples:
+      - "How many credits did X warehouse use?" → AdminAgent only
+      - "Is X warehouse wasting credits?" → CostOptimizerAgent only
+      - "Analyze X warehouse efficiency" → Both agents (usage + waste)
 
   tools:
     - tool_spec: { type: "function", name: "AdminAgent", ... }
     - tool_spec: { type: "function", name: "CostOptimizerAgent", ... }
-    - tool_spec: { type: "function", name: "SecurityAgent", ... }
   $$;
 ```
+
+> 📁 **Full SQL:** See [sql/12_create_orchestrator_agent.sql](https://github.com/LALITHASWAROOPK/agent_snowflake_admin/blob/main/sql/12_create_orchestrator_agent.sql)
 
 ### Routing Function
 
@@ -296,13 +259,13 @@ class SnowflakeAgentServer:
                 "parameters": {"question": "string"}
             },
             {
-                "name": "ask_cost_optimizer",
-                "description": "Direct query to Cost Optimizer",
+                "name": "ask_admin",
+                "description": "Direct query to Admin Agent",
                 "parameters": {"question": "string"}
             },
             {
-                "name": "ask_security",
-                "description": "Direct query to Security Agent",
+                "name": "ask_cost_optimizer",
+                "description": "Direct query to Cost Optimizer",
                 "parameters": {"question": "string"}
             }
         ]
@@ -310,8 +273,8 @@ class SnowflakeAgentServer:
     def call_tool(self, tool_name, question):
         agent_map = {
             "ask_orchestrator": ORCHESTRATOR_AGENT_FQN,
+            "ask_admin": ADMIN_AGENT_FQN,
             "ask_cost_optimizer": COST_OPTIMIZER_AGENT_FQN,
-            "ask_security": SECURITY_AGENT_FQN,
         }
         
         return ask_agent(question, agent_map[tool_name])
@@ -321,9 +284,11 @@ Now you can use GitHub Copilot Chat:
 
 ```
 @workspace How much are we spending on idle warehouses?
-@workspace Show me security anomalies from last week
-@workspace Give me optimization recommendations
+@workspace Show me optimization recommendations for ANALYTICS_WH
+@workspace Compare usage vs waste for our top 5 warehouses
 ```
+
+> 📁 **Full MCP Server:** See [mcp/server.py](https://github.com/LALITHASWAROOPK/agent_snowflake_admin/blob/main/mcp/server.py)
 
 ## Real-World Example: Optimization Workflow
 
@@ -447,36 +412,29 @@ ALTER USER admin_user SET DISABLED = FALSE;
 
 ## Deployment: From Prototype to Production
 
-### Local Development
+### Quick Start
+
+If you built the Admin Agent from Part 1, here's how to add the Cost Optimizer:
+
 ```bash
-# 1. Deploy SQL objects
+# 1. Deploy Cost Optimizer views and semantic views
 snowsql -f sql/06_create_cost_optimizer_views.sql
 snowsql -f sql/07_create_cost_optimizer_semantic_views.sql
-# ... (all SQL files in order)
 
-# 2. Configure environment
-cat > .env <<EOF
-SNOWFLAKE_ACCOUNT=your_account
-SNOWFLAKE_USER=your_user
-SNOWFLAKE_PASSWORD=your_password
-SNOWFLAKE_ORCHESTRATOR_AGENT_FQN=DB.SCHEMA.ORCHESTRATOR_AGENT
-...
-EOF
+# 2. Create Cost Optimizer Agent
+snowsql -f sql/10_create_cost_optimizer_agent.sql
 
-# 3. Start MCP server
-python mcp/server.py
+# 3. Create Orchestrator (routes between agents)
+snowsql -f sql/12_create_orchestrator_agent.sql
+
+# 4. Test it!
+SELECT SNOWFLAKE.CORTEX.DATA_AGENT_RUN(
+    'ORCHESTRATOR_AGENT',
+    '{"messages":[{"role":"user","content":[{"type":"text","text":"Which warehouses are idle?"}]}]}'
+);
 ```
 
-### Production (AWS)
-
-For multi-user production deployment:
-
-1. **Containerize** the MCP server
-2. **Deploy to AWS App Runner** for auto-scaling
-3. **Protect with Amazon Cognito** for JWT authentication
-4. **Host frontend UI on AWS Amplify**
-
-See [aws-hosting.md](https://github.com/LALITHASWAROOPK/agent_snowflake_admin/blob/main/docs/aws-hosting.md) for complete production setup.
+> 📁 **All SQL Scripts:** [https://github.com/LALITHASWAROOPK/agent_snowflake_admin/tree/main/sql](https://github.com/LALITHASWAROOPK/agent_snowflake_admin/tree/main/sql)
 
 ## Performance & Cost Considerations
 
@@ -534,32 +492,44 @@ MCP protocol enables integration with:
 
 ## What's Next?
 
-### Expanding the Agent Team
+In **Part 3**, I'll show you how to add a **Security & Governance Agent** that:
+- Audits role assignments and privileges
+- Detects failed login patterns (brute force attacks)
+- Identifies inactive users with access
+- Monitors for compliance violations
+
+Then we'll have a complete **three-agent team**:
+- 🔧 Admin - Operational metrics
+- 💰 Cost Optimizer - Waste detection
+- 🔐 Security - Compliance and access control
+
+All coordinated by the Orchestrator.
+
+### Expanding Further
 - **Performance Tuning Agent**: Query optimization deep dives
 - **Data Quality Agent**: Monitor freshness, completeness, accuracy
-- **Schema Governance Agent**: Track DDL changes, review permissions
-
-### Advanced Capabilities
-- **Predictive Analytics**: Forecast costs, predict capacity needs
 - **Automated Remediation**: Agents that fix issues, not just report them
-- **Learning & Adaptation**: Agents that learn from user feedback
-
-### Community & Open Source
-This multi-agent architecture is template-based and fully reusable. Fork it, customize it, extend it!
-
-Repository: [github.com/LALITHASWAROOPK/agent_snowflake_admin](https://github.com/LALITHASWAROOPK/agent_snowflake_admin)
 
 ## Conclusion
 
-Building a multi-agent Snowflake administration system demonstrates the power of **specialized AI + intelligent orchestration**. Instead of wrestling with dashboards and SQL queries, you can simply ask:
+In Part 1, we built one agent. In Part 2, we:
+1. ✅ Added a specialized **Cost Optimizer Agent**
+2. ✅ Created an **Orchestrator** for intelligent routing
+3. ✅ Made them work together as a team
 
-- *"How much could I save?"*
-- *"Are there security risks?"*
-- *"What should I optimize first?"*
+**The multi-agent pattern is powerful because:**
+- Each agent specializes in one domain
+- Orchestrator handles routing automatically
+- Easy to add new agents without changing existing ones
+- Users get comprehensive answers from one question
 
-And get intelligent, actionable answers from a team of AI specialists working together.
+**From the user's perspective:**
+```
+Before: "Which agent should I ask about idle warehouses?"
+After: "Which warehouses are idle?" (Orchestrator figures it out)
+```
 
-The future of Snowflake administration isn't just automated—it's **conversational, intelligent, and proactive**.
+In Part 3, we'll add a Security & Governance Agent to complete the team!
 
 ---
 
@@ -567,6 +537,11 @@ The future of Snowflake administration isn't just automated—it's **conversatio
 
 **Want to learn more?**
 - [Multi-Agent Architecture Docs](https://github.com/LALITHASWAROOPK/agent_snowflake_admin/blob/main/docs/multi-agent-architecture.md)
-- [AWS Production Deployment Guide](https://github.com/LALITHASWAROOPK/agent_snowflake_admin/blob/main/docs/aws-hosting.md)
 - [Complete SQL Scripts](https://github.com/LALITHASWAROOPK/agent_snowflake_admin/tree/main/sql)
 - [Snowflake Cortex AI Documentation](https://docs.snowflake.com/en/user-guide/snowflake-cortex)
+
+---
+
+*Part 1: [Build an AI Admin Agent](https://dev.to/swaroop_krishna_e2f4b83b2/ask-your-snowflake-account-anything-build-an-ai-admin-agent-with-cortex-github-copilot-1mk6)*  
+*Part 2: Multi-Agent Architecture (this post)*  
+*Part 3: Security & Governance Agent (coming soon)*
