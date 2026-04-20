@@ -290,9 +290,9 @@ Now you can use GitHub Copilot Chat:
 
 > 📁 **Full MCP Server:** See [mcp/server.py](https://github.com/LALITHASWAROOPK/agent_snowflake_admin/blob/main/mcp/server.py)
 
-## Real-World Example: Optimization Workflow
+## Complete Optimization Workflow
 
-Let's walk through a complete optimization workflow:
+Here's a full workflow showing how the agents work together to identify and fix waste:
 
 ### Step 1: Discovery
 **Ask:** *"What are my biggest cost optimization opportunities?"*
@@ -347,67 +347,6 @@ ANALYTICS_WH Post-Optimization (Last 7 Days):
 - Additional suspend/resume events: +89 (acceptable)
 
 ✓ Optimization successful!
-```
-
-## Real-World Example: Security Audit
-
-### Step 1: Routine Check
-**Ask:** *"Are there any security concerns I should know about?"*
-
-**Orchestrator routes to Security Agent**
-
-**Response:**
-```
-🔴 Critical Issues (2):
-1. User 'john.doe' has ACCOUNTADMIN but hasn't logged in for 73 days
-   Action: Revoke or investigate
-
-2. 15 failed login attempts for 'admin_user' from 5 different IPs in last hour
-   Action: Possible brute force attack - lock account
-
-⚠️ High Priority (3):
-1. 5 users have 6+ role assignments
-2. 23 queries failed with "insufficient privileges" from 'analyst_role'
-3. User 'contractor_temp' still has access 45 days after contract end
-
-✓ Low Priority (8):
-...
-```
-
-### Step 2: Investigation
-**Ask:** *"Show me details on the failed login attempts for admin_user"*
-
-**Response:**
-```
-Failed Login Analysis - admin_user:
-Time Range: 2026-04-15 14:23 - 14:47 (24 minutes)
-Failed Attempts: 15
-Distinct IPs: 5 (suspicious!)
-  - 203.0.113.45 (Russia) - 8 attempts
-  - 198.51.100.23 (Unknown) - 4 attempts
-  - 192.0.2.67 (Proxy) - 3 attempts
-
-Error Pattern: "Invalid username or password" (all attempts)
-Severity: CRITICAL - Possible credential stuffing attack
-
-Recommendations:
-1. Lock account immediately
-2. Force password reset
-3. Enable MFA if not already active
-4. Review network policy to block suspicious IPs
-```
-
-### Step 3: Remediation
-```sql
--- Lock account
-ALTER USER admin_user SET DISABLED = TRUE;
-
--- Update network policy
-ALTER NETWORK POLICY company_policy 
-  SET BLOCKED_IP_LIST = ('203.0.113.45', '198.51.100.23', '192.0.2.67');
-
--- Review after resolution
-ALTER USER admin_user SET DISABLED = FALSE;
 ```
 
 ## Deployment: From Prototype to Production
@@ -476,11 +415,10 @@ Users shouldn't need to know which agent to ask. Intelligent routing provides se
 Well-designed semantic views make agents powerful. They abstract complexity and enable natural language queries.
 
 ### 4. Start Simple, Scale Up
-Begin with one specialist agent, validate the approach, then add more. Our journey:
-- Week 1: Admin Agent only
-- Week 2: Added Cost Optimizer
-- Week 3: Added Security Agent
-- Week 4: Added Orchestrator
+Begin with one specialist agent, validate the approach, then add more:
+- Part 1: Admin Agent only
+- Part 2: Added Cost Optimizer + Orchestrator (this post)
+- Part 3: Security Agent (coming next)
 
 ### 5. Integrate Everywhere
 MCP protocol enables integration with:
