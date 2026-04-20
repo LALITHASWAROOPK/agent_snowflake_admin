@@ -476,7 +476,7 @@ For multi-user production deployment:
 3. **Protect with Amazon Cognito** for JWT authentication
 4. **Host frontend UI on AWS Amplify**
 
-See `docs/aws-hosting.md` for complete production setup.
+See [aws-hosting.md](https://github.com/LALITHASWAROOPK/agent_snowflake_admin/blob/main/docs/aws-hosting.md) for complete production setup.
 
 ## Performance & Cost Considerations
 
@@ -547,7 +547,7 @@ MCP protocol enables integration with:
 ### Community & Open Source
 This multi-agent architecture is template-based and fully reusable. Fork it, customize it, extend it!
 
-Repository: `github.com/your-org/agent-snowflake-admin`
+Repository: [github.com/LALITHASWAROOPK/agent_snowflake_admin](https://github.com/LALITHASWAROOPK/agent_snowflake_admin)
 
 ## Conclusion
 
@@ -563,9 +563,10 @@ The future of Snowflake administration isn't just automated—it's **conversatio
 
 ---
 
-**Try it yourself!** All code, SQL, and deployment guides are available in the repository. Questions? Ping me on Twitter [@yourhandle] or open an issue on GitHub.
+**Try it yourself!** All code, SQL, and deployment guides are available in the [GitHub repository](https://github.com/LALITHASWAROOPK/agent_snowflake_admin). Questions? Open an issue on GitHub.
 
 **Want to learn more?**
-- [Multi-Agent Architecture Docs](docs/multi-agent-architecture.md)
-- [AWS Production Deployment Guide](docs/aws-hosting.md)
+- [Multi-Agent Architecture Docs](https://github.com/LALITHASWAROOPK/agent_snowflake_admin/blob/main/docs/multi-agent-architecture.md)
+- [AWS Production Deployment Guide](https://github.com/LALITHASWAROOPK/agent_snowflake_admin/blob/main/docs/aws-hosting.md)
+- [Complete SQL Scripts](https://github.com/LALITHASWAROOPK/agent_snowflake_admin/tree/main/sql)
 - [Snowflake Cortex AI Documentation](https://docs.snowflake.com/en/user-guide/snowflake-cortex)
