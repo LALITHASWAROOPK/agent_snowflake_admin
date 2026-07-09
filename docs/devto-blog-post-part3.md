@@ -16,6 +16,11 @@ Now we close the loop with the third specialist: a **Security and Governance Age
 
 This turns your assistant from "what happened" and "what to optimize" into a full team that also answers "what is risky right now".
 
+This edition introduces the complete 3-part journey in one place:
+1. Operations visibility (Part 1)
+2. Cost optimization (Part 2)
+3. Security and governance with alerting focus (Part 3)
+
 By the end of this post, you will have:
 1. A Security and Governance Agent with focused security tools
 2. Security semantic views mapped to natural language
@@ -255,6 +260,7 @@ SELECT SNOWFLAKE.CORTEX.DATA_AGENT_RUN(
   - `<APP_DB>.<APP_SCHEMA>`
   - `<EXEC_WAREHOUSE>`
   - `<ADMIN_ROLE>`, `<DEVELOPER_ROLE>`
+- Part 3 is where alerting should be operationalized: start with failed login anomalies, excessive privileged access, and unauthorized access attempt thresholds.
 
 ## What We Have Now
 
@@ -288,6 +294,8 @@ Complete implementation:
 Part 1 gave us visibility.
 Part 2 gave us optimization.
 Part 3 gives us governance and risk control.
+
+Together, this edition introduces all three topics as one operating model for Snowflake platform teams, with Part 3 adding the security alerting layer.
 
 Same architecture pattern, broader coverage:
 **Views -> Semantic Views -> Specialist Agent -> Orchestrator**
